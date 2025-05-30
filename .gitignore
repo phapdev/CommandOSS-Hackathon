@@ -3,6 +3,12 @@
 # dependencies
 node_modules/
 
+# ai, cursor
+.cursorrules
+
+# cursor
+.cursor/
+
 # Expo
 .expo/
 dist/
@@ -37,3 +43,4 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+node_modules
