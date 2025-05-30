@@ -1,75 +1,91 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { EmptyState } from '@/components/EmptyState';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { PhotoCard } from '@/components/PhotoCard';
+import { Colors } from '@/constants/Colors';
+import { usePhotos } from '@/hooks/usePhotos';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
+  const router = useRouter();
+  const { photos, loading, error, fetchPhotos } = usePhotos();
+  const [refreshing, setRefreshing] = React.useState(false);
+  
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchPhotos();
+    setRefreshing(false);
+  };
+  
+  const handleCapture = () => {
+    // router.push('/capture');
+    alert('capture');
+  };
+  
+  const renderEmptyState = () => {
+    if (loading) return <LoadingIndicator fullScreen message="Loading your photos..." />;
+    
+    return (
+      <EmptyState
+        title="No Photos Yet"
+        description="Capture your first photo with SuiSnap to create immutable evidence on the blockchain."
+        buttonText="Take a Photo"
+        onButtonPress={handleCapture}
+        imageUrl="https://images.unsplash.com/photo-1575936123452-b67c3203c357?q=80&w=1000&auto=format&fit=crop"
+      />
+    );
+  };
+  
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <Text style={styles.title}>SuiSnap</Text>
+        <Text style={styles.subtitle}>Immutable Photo Evidence</Text>
+      </View>
+      
+      <FlatList
+        data={photos}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <PhotoCard photo={item} />}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={renderEmptyState}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[Colors.light.primary]}
+            tintColor={Colors.light.primary}
+          />
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: Colors.light.background,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  header: {
+    padding: 16,
+    paddingBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: Colors.light.text,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: Colors.light.textLight,
+    marginTop: 4,
+  },
+  listContent: {
+    padding: 16,
+    paddingTop: 8,
+    flexGrow: 1,
   },
 });
