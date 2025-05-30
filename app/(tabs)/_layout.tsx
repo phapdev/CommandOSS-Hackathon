@@ -19,8 +19,7 @@ export default function TabLayout() {
   const router = useRouter();
   
   const handleCapture = () => {
-    // router.push('/capture');
-    alert('capture');
+    router.push('/capture');
   };
   
   return (

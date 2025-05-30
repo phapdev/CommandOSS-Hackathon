@@ -41,7 +41,7 @@ export default function RootLayout() {
 function RootLayoutNav() {
   return (
     <>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -50,6 +50,7 @@ function RootLayoutNav() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
         <Stack.Screen 
           name="capture" 
           options={{ 
