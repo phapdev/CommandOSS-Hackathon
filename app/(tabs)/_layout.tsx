@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { Tabs, useRouter } from "expo-router";
-import { Camera, Home, Info } from "lucide-react-native";
+import { Camera, Home, Image, User } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 
@@ -58,7 +58,6 @@ export default function TabLayout() {
         }}
         listeners={() => ({
           tabPress: (e) => {
-            // Prevent default behavior
             e.preventDefault();
             handleCapture();
           },
@@ -66,11 +65,21 @@ export default function TabLayout() {
       />
       
       <Tabs.Screen
+        name="gallery"
+        options={{
+          title: "Gallery",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name={<Image size={24} color={color} />} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <TabBarIcon name={<Info size={24} color={color} />} color={color} />
+            <TabBarIcon name={<User size={24} color={color} />} color={color} />
           ),
         }}
       />
@@ -83,9 +92,13 @@ const styles = StyleSheet.create({
     height: 60,
     paddingBottom: 8,
     paddingTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5E5',
   },
   tabBarLabel: {
     fontSize: 12,
+    fontWeight: '500',
   },
   captureButton: {
     width: 56,
@@ -95,5 +108,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
 });

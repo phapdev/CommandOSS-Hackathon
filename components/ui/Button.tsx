@@ -1,186 +1,155 @@
 import { Colors } from '@/constants/Colors';
-import React from 'react';
-import {
-    ActivityIndicator,
-    StyleSheet,
-    Text,
-    TextStyle,
-    TouchableOpacity,
-    ViewStyle
-} from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'text';
-  size?: 'small' | 'medium' | 'large';
+  style?: any;
+  icon?: React.ReactNode;
+  variant?: 'primary' | 'secondary' | 'outline';
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
-  icon?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export function Button({
   title,
   onPress,
+  style,
+  icon,
   variant = 'primary',
-  size = 'medium',
   disabled = false,
   loading = false,
-  style,
-  textStyle,
-  icon
-}) => {
+}: ButtonProps) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
+  };
+
   const getButtonStyle = () => {
-    let buttonStyle: ViewStyle = {};
-    
-    // Variant styles
     switch (variant) {
-      case 'primary':
-        buttonStyle = {
-          backgroundColor: Colors.light.primary,
-          borderWidth: 0,
-        };
-        break;
       case 'secondary':
-        buttonStyle = {
-          backgroundColor: Colors.light.secondary,
-          borderWidth: 0,
-        };
-        break;
+        return styles.secondaryButton;
       case 'outline':
-        buttonStyle = {
-          backgroundColor: 'transparent',
-          borderWidth: 1,
-          borderColor: Colors.light.primary,
-        };
-        break;
-      case 'text':
-        buttonStyle = {
-          backgroundColor: 'transparent',
-          borderWidth: 0,
-          elevation: 0,
-          shadowOpacity: 0,
-        };
-        break;
+        return styles.outlineButton;
+      default:
+        return styles.primaryButton;
     }
-    
-    // Size styles
-    switch (size) {
-      case 'small':
-        buttonStyle = {
-          ...buttonStyle,
-          paddingVertical: 6,
-          paddingHorizontal: 12,
-          borderRadius: 4,
-        };
-        break;
-      case 'medium':
-        buttonStyle = {
-          ...buttonStyle,
-          paddingVertical: 10,
-          paddingHorizontal: 16,
-          borderRadius: 6,
-        };
-        break;
-      case 'large':
-        buttonStyle = {
-          ...buttonStyle,
-          paddingVertical: 14,
-          paddingHorizontal: 20,
-          borderRadius: 8,
-        };
-        break;
-    }
-    
-    // Disabled style
-    if (disabled) {
-      buttonStyle = {
-        ...buttonStyle,
-        opacity: 0.5,
-      };
-    }
-    
-    return buttonStyle;
   };
-  
+
   const getTextStyle = () => {
-    let style: TextStyle = {
-      fontWeight: '600',
-      textAlign: 'center',
-    };
-    
-    // Variant text styles
     switch (variant) {
-      case 'primary':
       case 'secondary':
-        style = {
-          ...style,
-          color: '#FFFFFF',
-        };
-        break;
+        return styles.secondaryText;
       case 'outline':
-      case 'text':
-        style = {
-          ...style,
-          color: Colors.light.primary,
-        };
-        break;
+        return styles.outlineText;
+      default:
+        return styles.primaryText;
     }
-    
-    // Size text styles
-    switch (size) {
-      case 'small':
-        style = {
-          ...style,
-          fontSize: 14,
-        };
-        break;
-      case 'medium':
-        style = {
-          ...style,
-          fontSize: 16,
-        };
-        break;
-      case 'large':
-        style = {
-          ...style,
-          fontSize: 18,
-        };
-        break;
-    }
-    
-    return style;
   };
-  
+
   return (
     <TouchableOpacity
-      style={[styles.button, getButtonStyle(), style]}
+      style={[
+        styles.button,
+        getButtonStyle(),
+        disabled && styles.disabledButton,
+        style,
+      ]}
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
-      activeOpacity={0.7}
+      activeOpacity={1}
     >
-      {loading ? (
-        <ActivityIndicator 
-          color={variant === 'primary' || variant === 'secondary' ? '#FFFFFF' : Colors.light.primary} 
-          size="small" 
-        />
-      ) : (
-        <>
-          {icon && <>{icon}</>}
-          <Text style={[getTextStyle(), textStyle]}>{title}</Text>
-        </>
-      )}
+      <Animated.View 
+        style={[
+          styles.content,
+          {
+            transform: [{ scale: scaleAnim }],
+            opacity: loading ? 0.7 : 1,
+          }
+        ]}
+      >
+        {icon && <View style={styles.iconContainer}>{icon}</View>}
+        <Text style={[getTextStyle(), disabled && styles.disabledText]}>
+          {title}
+        </Text>
+      </Animated.View>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
+    height: 56,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  primaryButton: {
+    backgroundColor: Colors.light.primary,
+  },
+  secondaryButton: {
+    backgroundColor: Colors.light.primaryLight,
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: Colors.light.primary,
+  },
+  disabledButton: {
+    backgroundColor: Colors.light.border,
+    borderColor: Colors.light.border,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconContainer: {
+    marginRight: 8,
+  },
+  primaryText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryText: {
+    color: Colors.light.primaryDark,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  outlineText: {
+    color: Colors.light.primary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledText: {
+    color: Colors.light.placeholder,
   },
 });

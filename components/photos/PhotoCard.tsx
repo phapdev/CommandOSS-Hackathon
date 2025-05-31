@@ -88,7 +88,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onShare }) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: Colors.light.background,
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 16,

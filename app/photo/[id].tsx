@@ -219,8 +219,16 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 300,
-    borderRadius: 12,
+    height: 330,
+    borderRadius: 36,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   captionContainer: {
     marginTop: 16,
@@ -266,7 +274,7 @@ const styles = StyleSheet.create({
   blockchainContainer: {
     marginTop: 24,
     padding: 16,
-    backgroundColor: Colors.light.card,
+    backgroundColor: Colors.light.background,
     borderRadius: 12,
   },
   blockchainTitle: {

@@ -1,88 +1,132 @@
 import { Colors } from '@/constants/Colors';
-import React from 'react';
-import { Animated, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Easing, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface CaptureButtonProps {
   onPress: () => void;
   isRecording?: boolean;
 }
 
-export const CaptureButton: React.FC<CaptureButtonProps> = ({ 
-  onPress, 
-  isRecording = false 
-}) => {
+export function CaptureButton({ onPress, isRecording = false }: CaptureButtonProps) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const animation = React.useRef(new Animated.Value(0)).current;
-  
-  React.useEffect(() => {
+  useEffect(() => {
     if (isRecording) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(animation, {
+          Animated.timing(pulseAnim, {
+            toValue: 1.2,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
             toValue: 1,
             duration: 1000,
-            useNativeDriver: false,
-          }),
-          Animated.timing(animation, {
-            toValue: 0,
-            duration: 1000,
-            useNativeDriver: false,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
           }),
         ])
       ).start();
     } else {
-      animation.setValue(0);
+      pulseAnim.setValue(1);
     }
   }, [isRecording]);
-  
-  const outerRingStyle = {
-    borderColor: animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [Colors.light.primary, Colors.light.error],
-    }),
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.9,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
   };
-  
-  const innerCircleStyle = {
-    backgroundColor: animation.interpolate({
-      inputRange: [0, 1],
-      outputRange: [Colors.light.primary, Colors.light.error],
-    }),
-    transform: [
-      {
-        scale: animation.interpolate({
-          inputRange: [0, 1],
-          outputRange: [1, 0.8],
-        }),
-      },
-    ],
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 4,
+    }).start();
   };
-  
+
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
-      <Animated.View style={[styles.outerRing, outerRingStyle]}>
-        <Animated.View style={[styles.innerCircle, innerCircleStyle]} />
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      activeOpacity={1}
+    >
+      <Animated.View 
+        style={[
+          styles.outerRing,
+          {
+            transform: [
+              { scale: pulseAnim },
+              { scale: scaleAnim }
+            ],
+          }
+        ]}
+      >
+        <View style={styles.innerRing}>
+          <View style={[
+            styles.button,
+            isRecording && styles.recordingButton
+          ]} />
+        </View>
       </Animated.View>
     </TouchableOpacity>
   );
-};
+}
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   outerRing: {
     width: 80,
     height: 80,
-    borderRadius: 45,
-    borderWidth: 4,
-    borderColor: Colors.light.primary,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
-  innerCircle: {
+  innerRing: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: Colors.light.background,
-    borderWidth: 3,
-    borderColor: Colors.light.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  recordingButton: {
+    backgroundColor: Colors.light.error,
+    transform: [{ scale: 0.8 }],
   },
 });

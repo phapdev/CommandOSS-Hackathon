@@ -40,7 +40,7 @@ export const usePhotoCapture = () => {
         exif: true,
         base64: false,
       }) as CameraCapturedPicture;
-      
+
       if (!photo.uri) {
         return null;
       }
