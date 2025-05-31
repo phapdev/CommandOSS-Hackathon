@@ -1,4 +1,4 @@
-import { CameraType, CameraView } from "expo-camera";
+import { CameraView } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -12,7 +12,7 @@ import {
   RotateCcw,
   X,
 } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import {
   Platform,
   ScrollView,
@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/Button";
 import { Colors } from "@/constants/Colors";
 import { usePhotoCapture } from "@/hooks/usePhotoCapture";
 import { usePhotos } from "@/hooks/usePhotos";
+import { useCaptureStore } from "@/storages/capture-store";
 import { Photo } from "@/types";
 import { generateHashtags } from "@/utils/ai";
 
@@ -41,17 +42,27 @@ export default function CaptureScreen() {
     processPhoto,
     loading: captureLoading,
   } = usePhotoCapture();
+
   const { addPhoto } = usePhotos();
   const cameraRef = useRef<CameraView>(null);
 
-  const [photo, setPhoto] = useState<Photo | null>(null);
-  const [caption, setCaption] = useState("");
-  const [hashtags, setHashtags] = useState<string[]>([]);
-  const [facing, setFacing] = useState<CameraType>("back");
-  const [processing, setProcessing] = useState(false);
-  const [step, setStep] = useState<"camera" | "preview" | "processing">(
-    "camera"
-  );
+  const {
+    photo,
+    caption,
+    hashtags,
+    facing,
+    processing,
+    step,
+    setPhoto,
+    setCaption,
+    setHashtags,
+    setFacing,
+    setProcessing,
+    setStep,
+    reset,
+  } = useCaptureStore();
+
+  console.log("UseCaptureStore", photo);
 
   const handleCapture = async () => {
     if (Platform.OS !== "web") {
@@ -72,18 +83,15 @@ export default function CaptureScreen() {
   };
 
   const handleFlipCamera = () => {
-    setFacing((current) => (current === "back" ? "front" : "back"));
-    if (Platform.OS !== "web") {
+    setFacing(facing === 'back' ? 'front' : 'back');
+    if (Platform.OS !== 'web') {
       Haptics.selectionAsync();
     }
   };
 
   const handleCancel = () => {
     if (step === "preview") {
-      setPhoto(null);
-      setCaption("");
-      setHashtags([]);
-      setStep("camera");
+      reset();
     } else {
       router.back();
     }
@@ -119,6 +127,10 @@ export default function CaptureScreen() {
     }
   };
 
+  const handleCaptionChange = (text: string) => {
+    setCaption(text);
+  };
+
   const renderCamera = () => (
     <View style={styles.cameraContainer}>
       <View style={styles.cameraHeader}>
@@ -129,21 +141,30 @@ export default function CaptureScreen() {
         </View>
       </View>
 
-      <View style={styles.cameraControls}>
-        <TouchableOpacity style={styles.closeButton} onPress={handleCancel}>
-          <X size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.flipButton} onPress={handleFlipCamera}>
-          <RotateCcw size={24} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
-
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef}></CameraView>
+      {/* Camera View and loading indicator */}
+      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+        {captureLoading && (
+          <LoadingIndicator message="Capturing photo..." fullScreen={true} />
+        )}
+      </CameraView>
 
       <View style={styles.captureButtonContainer}>
-        <CaptureButton onPress={handleCapture} />
+        <View style={styles.cameraControls}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleCancel}>
+            <X size={35} color="#FFFFFF" />
+          </TouchableOpacity>
+
+          <CaptureButton onPress={handleCapture} />
+
+          <TouchableOpacity
+            style={styles.flipButton}
+            onPress={handleFlipCamera}
+          >
+            <RotateCcw size={35} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
+
     </View>
   );
 
@@ -176,7 +197,7 @@ export default function CaptureScreen() {
           <TextInput
             style={styles.captionInput}
             value={caption}
-            onChangeText={setCaption}
+            onChangeText={handleCaptionChange}
             placeholder="Add a caption..."
             multiline
             maxLength={150}
@@ -187,7 +208,7 @@ export default function CaptureScreen() {
               <TouchableOpacity
                 key={index}
                 style={styles.hashtagBadge}
-                onPress={() => setCaption((prev) => `${prev} ${tag}`)}
+                onPress={() => setCaption(`${caption} ${tag}`)}
               >
                 <Text style={styles.hashtagText}>{tag}</Text>
               </TouchableOpacity>
@@ -245,7 +266,7 @@ export default function CaptureScreen() {
         </View>
 
         <Button
-          title="Save to Blockchain"
+          title="Save & Post"
           onPress={handleSave}
           style={styles.saveButton}
           icon={<Check size={18} color="#FFFFFF" />}
@@ -308,9 +329,9 @@ const styles = StyleSheet.create({
     borderRadius: 45,
   },
   cameraControls: {
+    width: "80%",
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 16,
   },
   closeButton: {
     width: 40,
@@ -330,7 +351,7 @@ const styles = StyleSheet.create({
   },
   captureButtonContainer: {
     position: "absolute",
-    bottom: 40,
+    bottom: 150,
     left: 0,
     right: 0,
     alignItems: "center",
