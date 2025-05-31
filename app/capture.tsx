@@ -24,9 +24,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { CaptureButton } from "@/components/CaptureButton";
+import { CaptureButton } from "@/components/capture/CaptureButton";
+import { Map } from "@/components/capture/Map";
 import { LoadingIndicator } from "@/components/LoadingIndicator";
-import { Map } from "@/components/Map";
 import { Button } from "@/components/ui/Button";
 import { Colors } from "@/constants/Colors";
 import { usePhotoCapture } from "@/hooks/usePhotoCapture";
@@ -124,6 +124,9 @@ export default function CaptureScreen() {
       router.replace("/");
     } catch (error) {
       console.error("Error saving photo:", error);
+    } finally {
+      setProcessing(false);
+      setStep("camera");
     }
   };
 
@@ -135,7 +138,7 @@ export default function CaptureScreen() {
     <View style={styles.cameraContainer}>
       <View style={styles.cameraHeader}>
         <Camera size={24} color="#FFFFFF" />
-        <Text style={styles.cameraHeaderText}>Walrus</Text>
+        <Text style={styles.cameraHeaderText}>SuiSnap</Text>
         <View style={styles.cameraHeaderRight}>
           <MessageCircle size={24} color="#FFFFFF" />
         </View>
@@ -323,9 +326,10 @@ const styles = StyleSheet.create({
 
   //= Camera Controls =//
   camera: {
-    flex: 0.55,
+    flex: 0.5,
     marginLeft: 5,
     marginRight: 5,
+    marginTop: 10,
     borderRadius: 45,
   },
   cameraControls: {

@@ -1,6 +1,6 @@
-import { EmptyState } from '@/components/EmptyState';
+import { EmptyState } from '@/components/capture/EmptyState';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { PhotoCard } from '@/components/PhotoCard';
+import { PhotoCard } from '@/components/photos/PhotoCard';
 import { Colors } from '@/constants/Colors';
 import { usePhotos } from '@/hooks/usePhotos';
 import { useRouter } from 'expo-router';
@@ -20,8 +20,7 @@ export default function HomeScreen() {
   };
   
   const handleCapture = () => {
-    // router.push('/capture');
-    alert('capture');
+    router.push('/capture');
   };
   
   const renderEmptyState = () => {

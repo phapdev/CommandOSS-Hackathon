@@ -2,7 +2,7 @@ import { Colors } from "@/constants/Colors";
 import { Image } from "expo-image";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Button } from "./ui/Button";
+import { Button } from "../ui/Button";
 
 interface EmptyStateProps {
   title: string;

@@ -20,8 +20,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({ photo, onShare }) => {
   };
   
   const handlePress = () => {
-    // router.push(`/photo/${photo.id}`);
-    alert('photo');
+    router.push(`/photo/${photo.id}`);
   };
   
   return (
