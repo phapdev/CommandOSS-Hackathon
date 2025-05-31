@@ -68,9 +68,9 @@ export const CaptureButton: React.FC<CaptureButtonProps> = ({
 
 const styles = StyleSheet.create({
   outerRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     borderWidth: 4,
     borderColor: Colors.light.primary,
     justifyContent: 'center',
@@ -78,9 +78,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
   innerCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.light.primary,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: Colors.light.background,
+    borderWidth: 2,
+    borderColor: Colors.light.background,
   },
 });

@@ -3,38 +3,47 @@ import { generateCaption } from '@/utils/ai';
 import { storeOnBlockchain } from '@/utils/blockchain';
 import { uploadToIPFS } from '@/utils/ipfs';
 import { getAddressFromCoordinates, getCurrentLocation, getWeather } from '@/utils/location';
-import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
+import { Camera, CameraCapturedPicture, CameraView } from 'expo-camera';
+import * as FileSystem from 'expo-file-system';
+import React, { useState } from 'react';
 
 export const usePhotoCapture = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const capturePhoto = async (): Promise<Photo | null> => {
+  const capturePhoto = async (cameraRef: React.RefObject<CameraView | null>): Promise<Photo | null> => {
+    if(loading) return null;
     try {
       setLoading(true);
       setError(null);
       
+      if (!cameraRef.current) {
+        setError('Camera not initialized');
+        return null;
+      }
+
       // Request camera permission
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         setError('Camera permission is required');
         return null;
       }
+
+      // Create a temporary file path
+      const photoPath = `${FileSystem.cacheDirectory}photo_${Date.now()}.jpg`;
       
-      // Capture image
-      const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
+      console.log('capturePhoto');
+      // Capture image using expo-camera
+      const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
-      });
+        skipProcessing: false,
+        exif: true,
+        base64: false,
+      }) as CameraCapturedPicture;
       
-      if (result.canceled || !result.assets || result.assets.length === 0) {
+      if (!photo.uri) {
         return null;
       }
-      
-      const imageUri = result.assets[0].uri;
       
       // Get location data
       const locationData = await getCurrentLocation();
@@ -57,12 +66,12 @@ export const usePhotoCapture = () => {
       }
       
       // Generate AI caption
-      const suggestedCaption = await generateCaption(imageUri);
+      const suggestedCaption = await generateCaption(photo.uri);
       
       // Create photo object
-      const photo: Photo = {
+      const photoObj: Photo = {
         id: Date.now().toString(),
-        uri: imageUri,
+        uri: photo.uri,
         caption: suggestedCaption,
         timestamp: Date.now(),
         location,
@@ -70,7 +79,7 @@ export const usePhotoCapture = () => {
         verified: false,
       };
       
-      return photo;
+      return photoObj;
       
     } catch (err) {
       console.error('Error capturing photo:', err);

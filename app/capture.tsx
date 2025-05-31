@@ -12,7 +12,7 @@ import {
   RotateCcw,
   X,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Platform,
   ScrollView,
@@ -42,6 +42,7 @@ export default function CaptureScreen() {
     loading: captureLoading,
   } = usePhotoCapture();
   const { addPhoto } = usePhotos();
+  const cameraRef = useRef<CameraView>(null);
 
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [caption, setCaption] = useState("");
@@ -57,7 +58,7 @@ export default function CaptureScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
 
-    const capturedPhoto = await capturePhoto();
+    const capturedPhoto = await capturePhoto(cameraRef);
 
     if (capturedPhoto) {
       setPhoto(capturedPhoto);
@@ -137,7 +138,8 @@ export default function CaptureScreen() {
           <RotateCcw size={24} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-      <CameraView style={styles.camera} facing={facing}></CameraView>
+
+      <CameraView style={styles.camera} facing={facing} ref={cameraRef}></CameraView>
 
       <View style={styles.captureButtonContainer}>
         <CaptureButton onPress={handleCapture} />
@@ -301,6 +303,8 @@ const styles = StyleSheet.create({
   //= Camera Controls =//
   camera: {
     flex: 0.55,
+    marginLeft: 5,
+    marginRight: 5,
     borderRadius: 45,
   },
   cameraControls: {
